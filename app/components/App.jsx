@@ -1,5 +1,6 @@
 import uuid from 'node-uuid';
 import React from 'react';
+import Notes from './Notes.jsx';
 
 export default class App extends React.Component {
 
@@ -23,21 +24,41 @@ export default class App extends React.Component {
           id: uuid.v4(),
           task: 'Do Some dishes'
         }
-
-
       ]
     };
   }
 
   render() {
     const notes = this.state.notes;
+
     return (
       <div>
-        <ul>{notes.map(note =>
-          <li key={note.id}>{note.task}</li>
-          )}
-        </ul>
+        <button onClick={this.addNote}>+</button>
+        <Notes notes={notes} onEdit={this.editNote}/>
       </div>
     );
   }
+
+  addNote = () => {
+    this.setState({
+      notes: this.state.notes.concat([{
+        id: uuid.v4(),
+        task: 'New task'
+      }])
+    })
+  }
+
+  editNote = (id, task) => {
+    // don't allow setting empty value
+    if (!task.trim()){
+      return;
+    }
+    const notes = this.state.notes.map(note => {
+      if(note.id === id && task) {
+        note.task = task;
+      }
+      return note;
+    });
+    this.setState({notes});
+  };
 }
