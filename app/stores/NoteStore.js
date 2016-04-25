@@ -6,8 +6,13 @@ class NoteStore {
   constructor() {
     this.bindActions(NoteActions);
     this.notes = [];
-    // verbose mode:
-    //   alt.dispatcher.register(console.log.bind(console));
+    
+    // Set verbose console mode:
+    // alt.dispatcher.register(console.log.bind(console));
+
+    this.exportPublicMethods({
+      getNotesByIds: this.getNotesByIds.bind(this)
+    })
   }
 
   create(note) {
@@ -18,6 +23,7 @@ class NoteStore {
     this.setState({
       notes: notes.concat(note)
     });
+    return note;
   }
 
   update(updatedNote) {
@@ -35,9 +41,19 @@ class NoteStore {
   }
 
   delete(id){
+    console.log("delete note ${id} - " + id)
     this.setState({
       notes: this.notes.filter(note => note.id !== id)
     });
+  }
+
+  getNotesByIds(ids){
+    // ensure we're using an array
+    return(ids || []).map(
+      // extract matching notes
+      id => this.notes.filter(note => note.id === id)
+      // filter out possible empty arrays and get notes
+      ).filter(a => a.length).map(a => a[0])
   }
 }
 
