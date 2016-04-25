@@ -13,13 +13,13 @@ export default class Lane extends React.Component{
     return(
       <div {...props}>
         <div className="lane-header" onClick={this.activateLaneEdit}>
+          <div className="lane-add-note">
+            <button onClick={this.addNote}>+</button>
+          </div>
           <Editable className="lane-name" editing={lane.editing} value={lane.name} onEdit={this.editName} />
           <div className="lane-delete">
             <button onClick={this.deleteLane}>x</button>
           </div>
-        </div>
-        <div className="lane-add-note">
-          <button onClick={this.addNote}>+</button>
         </div>
         <AltContainer stores={[NoteStore]}
           inject={{
