@@ -1,3 +1,4 @@
+import AltContainer from 'alt-container';
 import React from 'react';
 import Notes from './Notes.jsx';
 
@@ -6,28 +7,30 @@ import NoteStore from '../stores/NoteStore';
 
 export default class App extends React.Component {
 
-  constructor(props) {
-    // if you don't call this, then this.props is not iniitalized
-    super(props);
+  /* Functionality from this code is replaced by AltContainer
+  // constructor(props) {
+  //   // if you don't call this, then this.props is not iniitalized
+  //   super(props);
 
-    // initialize the state of the app
-    this.state = NoteStore.getState();
-  }
+  //   // initialize the state of the app
+  //   this.state = NoteStore.getState();
+  // }
 
-  componentDidMount() {
-    NoteStore.listen(this.storeChanged);
-  }
+  // componentDidMount() {
+  //   NoteStore.listen(this.storeChanged);
+  // }
 
-  componentWillUnmount() {
-    NoteStore.unlisten(this.storeChanged);
-  }
+  // componentWillUnmount() {
+  //   NoteStore.unlisten(this.storeChanged);
+  // }
 
-  storeChanged = (state) => {
-    // this method requires a property initializer because it defaults to 
-    // 'undefined' without the property initializer setting the "this" method.
-    this.setState(state);
-  }
-
+  // storeChanged = (state) => {
+  //   // this method requires a property initializer because it defaults to 
+  //   // 'undefined' without the property initializer setting the "this" method.
+  //   this.setState(state);
+  // }
+  */
+ 
   // property initializer feature of ES7 for addNote binds it to this automatically.
   addNote = () => {
     // setting state requires that you pass in the entire state object! ooooh.
@@ -57,12 +60,12 @@ export default class App extends React.Component {
   }
 
   render() {
-    const notes = this.state.notes;
-
     return (
       <div>
         <button className="add-note" onClick={this.addNote}>Add Note</button>
-        <Notes notes={notes} onEdit={this.editNote} onDelete={this.deleteNote}/>
+        <AltContainer stores={[NoteStore]} inject={{ notes: () => NoteStore.getState().notes}}>
+          <Notes onEdit={this.editNote} onDelete={this.deleteNote}/>
+        </AltContainer>
       </div>
     );
   }
