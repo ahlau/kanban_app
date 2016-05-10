@@ -2,7 +2,8 @@
 import uuid from 'node-uuid';
 import alt from '../libs/alt';
 import LaneActions from '../actions/LaneActions';
-import NoteStore from './NoteStore'
+import NoteStore from './NoteStore';
+import NoteActions from '../actions/NoteActions';
 
 // this is just a class, doesn't need to extend React.Component
 class LaneStore {
@@ -28,8 +29,30 @@ class LaneStore {
     console.log("Created new lane: " + lane.id)
   }
 
+  update(updatedLane) {
+    const lanes = this.lanes.map((lane) => {
+      if (lane.id === updatedLane.id) {
+        return Object.assign({}, lane, updatedLane);
+      }
+      return lane;
+    });
+    this.setState({lanes});
+  }
+
+  delete(id) {
+    // const lane = this.lanes.filter(lane => lane.id === id)[0];
+    // if(lane){
+    //   console.warn("deleting lane " + lane.id + ", and notes: " + lane.notes)
+    //   const notes = NoteStore.getNotesByIds(lane.notes);
+    //   notes.map( note => NoteActions.delete(note.id) );
+    // }
+    // else {
+    //   console.warn("lane not found for id: " + id)
+    // }
+    this.setState({lanes: this.lanes.filter(lane => lane.id !== id)});
+  }
+
   deleteAll(){
-    console.warn("deleted all local storage");
     this.setState({lanes: []});
     NoteStore.deleteAll();
   }
