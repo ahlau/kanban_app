@@ -73,5 +73,14 @@ if(TARGET === 'start' || !TARGET) {
 }
 
 if(TARGET === 'build') {
-  module.exports = merge(common, {});
+  module.exports = merge(common, {
+    plugins: [
+      // Define Plugin places code as is so extra quotes are needed.
+      new webpack.DefinePlugin({'process.env.NODE_ENV': '"production"' }), 
+
+      new webpack.optimize.UglifyJsPlugin({
+        compress: { warnings: false }
+      })
+    ]
+  });
 }
