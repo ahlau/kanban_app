@@ -84,7 +84,7 @@ body {
   visibility: visible;
 }
 
-.add-lane, .lane-add-note button {
+.add-lane, .lane-add-note button, .clear-lanes {
   cursor: pointer;
   background-color: #fdfdfd;
   border: 1px solid #ccc;

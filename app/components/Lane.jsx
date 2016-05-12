@@ -7,12 +7,37 @@ import NoteStore from '../stores/NoteStore';
 import LaneStore from '../stores/LaneStore';
 import Notes from './Notes.jsx';
 import Editable from './Editable.jsx';
+import {DragDropContext} from 'react-dnd';
+import {DropTarget} from 'react-dnd';
+import HTML5Backend from 'react-dnd-html5-backend';
+import ItemTypes from '../constants/itemTypes';
 
+const noteTarget = {
+  hover(targetProps, monitor) {
+    const sourceProps = monitor.getItem();
+    const sourceId = sourceProps.id;
+
+    // console.log('source: ' + sourceId + ', target: ' + targetProps.lane.id + ", notes: " + targetProps.lane.notes.length);
+    // if the lane is empty, then show these console log statements.
+    if(!targetProps.lane.notes.length) {
+      console.log('empty lane - source: ' + sourceId + ", target: " + targetProps.lane.id);
+      LaneActions.attachToLane({
+        laneId: targetProps.lane.id,
+        noteId: sourceId
+      });
+    }
+  }
+};
+
+@DragDropContext(HTML5Backend)
+@DropTarget(ItemTypes.NOTE, noteTarget, (connect) => ({
+  connectDropTarget: connect.dropTarget()
+}))
 export default class Lane extends React.Component {
   render() {
-    const {lane, ...props} = this.props;
+    const {connectDropTarget, lane, ...props} = this.props;
 
-    return (
+    return connectDropTarget(
       <div {...props}>
         <div className="lane-header" onClick={this.activateLaneEdit}>
           <div className="lane-add-note">
@@ -31,7 +56,7 @@ export default class Lane extends React.Component {
         >
           <Notes 
             onValueClick={this.activateNoteEdit}
-            onEdit={this.editNote} 
+            onEdit={this.editNote}
             onDelete={this.deleteNote} />
         </AltContainer>
       </div>
@@ -55,7 +80,7 @@ export default class Lane extends React.Component {
 
   deleteNote = (noteId, e) => {
     e.stopPropagation();
-    laneId = this.props.lane.id;
+    const laneId = this.props.lane.id;
     LaneActions.detachFromLane({noteId, laneId});
     NoteActions.delete(noteId);
   };
