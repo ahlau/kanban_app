@@ -2,15 +2,16 @@
 const path = require('path');
 const webpack = require('webpack');
 const merge = require('webpack-merge');
+
+const NpmInstallPlugin = require('npm-install-webpack-plugin');
+const pkg = require('./package.json');
+
 const TARGET = process.env.npm_lifecycle_event; // 'start' or 'build'
 const PATHS = {
   app: path.join(__dirname, 'app'),
   build: path.join(__dirname, 'build')
 };
-const NpmInstallPlugin = require('npm-install-webpack-plugin');
-
 process.env.BABEL_ENV = TARGET;
-
 
 const common = {
   entry: {
@@ -22,7 +23,7 @@ const common = {
   },
   output: {
     path: PATHS.build, 
-    filename: 'bundle.js'
+    filename: '[name].js'
   },
   module: {
     loaders: [
@@ -74,6 +75,11 @@ if(TARGET === 'start' || !TARGET) {
 
 if(TARGET === 'build') {
   module.exports = merge(common, {
+    entry: {
+      vendor: Object.keys(pkg.dependencies).filter(function(v) {
+        return v !== 'alt-utils';
+      })
+    },
     plugins: [
       // Define Plugin places code as is so extra quotes are needed.
       new webpack.DefinePlugin({'process.env.NODE_ENV': '"production"' }), 
