@@ -5,17 +5,22 @@ const merge = require('webpack-merge');
 
 const NpmInstallPlugin = require('npm-install-webpack-plugin');
 const pkg = require('./package.json');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const CleanPlugin = require('clean-webpack-plugin');
+const ExtractTextPlugin = require('extract-text-webpack-plugin');
 
 const TARGET = process.env.npm_lifecycle_event; // 'start' or 'build'
 const PATHS = {
   app: path.join(__dirname, 'app'),
-  build: path.join(__dirname, 'build')
+  build: path.join(__dirname, 'build'),
+  style: path.join(__dirname, 'app/main.css')
 };
 process.env.BABEL_ENV = TARGET;
 
 const common = {
   entry: {
-    app: PATHS.app
+    app: PATHS.app,
+    style: PATHS.style
   }, 
   resolve: {
     // '' is needed to allow imports without an extension, and '.' is required
@@ -28,23 +33,20 @@ const common = {
   module: {
     loaders: [
       {
-        // Test expects regex
-        test: /\.css$/,
-        // loads CSS and Style loaders (like pre-processors, can be chained together) 
-        // See: http://webpack.github.io/docs/using-loaders.html
-        //   css-loader resolves @import and url statements
-        //   style-loader resolves require statements
-        loaders: ['style', 'css'],
-        // could be an array of paths, also
-        include: PATHS.app
-      },
-      {
         test: /\.jsx?$/,
         loaders: ['babel?cacheDirectory'],
         include: PATHS.app
       }
     ]
-  }
+  }, 
+  plugins: [
+    new HtmlWebpackPlugin({
+      template: 'node_modules/html-webpack-template/index.ejs',
+      title: "Kanban app",
+      appMountId: 'app',
+      inject: false
+    })
+  ]
 };
 
 // default setup
@@ -64,6 +66,20 @@ if(TARGET === 'start' || !TARGET) {
       port: process.env.PORT
     },
     devtool: 'eval-source-map',
+
+    // loads CSS and Style loaders (like pre-processors, can be chained together) 
+    // See: http://webpack.github.io/docs/using-loaders.html
+    //   css-loader resolves @import and url statements
+    //   style-loader resolves require statements
+    module: {
+      loaders: [
+        {
+          test: /\.css$/,
+          loaders: ['style', 'css'],
+          include: PATHS.app
+        }
+      ]
+    },
     plugins: [
       new webpack.HotModuleReplacementPlugin(),
       new NpmInstallPlugin({
@@ -73,7 +89,7 @@ if(TARGET === 'start' || !TARGET) {
   });
 }
 
-if(TARGET === 'build') {
+if(TARGET === 'build' || TARGET === "stats") {
   module.exports = merge(common, {
     entry: {
       vendor: Object.keys(pkg.dependencies).filter(function(v) {
@@ -83,10 +99,32 @@ if(TARGET === 'build') {
     plugins: [
       // Define Plugin places code as is so extra quotes are needed.
       new webpack.DefinePlugin({'process.env.NODE_ENV': '"production"' }), 
-
       new webpack.optimize.UglifyJsPlugin({
         compress: { warnings: false }
-      })
-    ]
+      }),
+      new webpack.optimize.CommonsChunkPlugin({
+        names: ['vendor', 'manifest']
+      }),
+      new CleanPlugin([PATHS.build]),
+      new ExtractTextPlugin('[name].[chunkhash].css'),
+    ],
+    output: {
+      path: PATHS.build,
+      filename: '[name].[chunkhash].js',
+      chunkFilename: '[chunkhash].js'
+    },
+    module: {
+      // loads CSS and Style loaders (like pre-processors, can be chained together) 
+      // See: http://webpack.github.io/docs/using-loaders.html
+      //   css-loader resolves @import and url statements
+      //   style-loader resolves require statements
+      loaders: [
+        {
+          test: /\.css$/,
+          loader: ExtractTextPlugin.extract("style", "css"),
+          include: PATHS.app
+        }
+      ]
+    }
   });
 }
